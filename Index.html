@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BHEL GeM Bid Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback styles in case CDN is blocked locally */
+        body { font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        header { background: #1e3a8a; color: white; padding: 1rem; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        main { max-width: 480px; margin: 0 auto; padding: 1rem; }
+        .card { background: white; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; margin-bottom: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header>
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-lg font-bold tracking-wide">BHEL GeM Tracker</h1>
+            <span class="text-xs bg-blue-700 px-2 py-1 rounded-full text-white">Live Feed</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 w-full space-y-4">
+        <!-- Search Bar -->
+        <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Search tender ID, item, or unit..." 
+                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            >
+        </div>
+
+        <!-- Bids Counter -->
+        <div class="flex justify-between items-center text-xs text-slate-500 px-1">
+            <span id="bidCount">Loading active bids...</span>
+            <span>Synced just now</span>
+        </div>
+
+        <!-- Bid Cards List Container -->
+        <div id="bidList" class="space-y-3">
+            <!-- Dynamic Cards Will Inject Here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-400">
+        Built mobile-first with Gemini & Android
+    </footer>
+
+    <!-- Supabase Client JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
