@@ -1,17 +1,17 @@
 import os
 from supabase import create_client, Client
 
-# Debug: Print what keys are available in the environment (safe, doesn't print values)
-print("Checking environment variables...")
-print(f"SUPABASE_URL exists: {bool(os.environ.get('SUPABASE_URL'))}")
-print(f"SUPABASE_KEY exists: {bool(os.environ.get('SUPABASE_KEY'))}")
-print(f"SUPABASE_ANON_KEY exists: {bool(os.environ.get('SUPABASE_ANON_KEY'))}")
+# Diagnostic: Print all environment variable names (safe, no values exposed)
+print("--- ALL AVAILABLE ENV KEYS ---")
+for k in os.environ.keys():
+    print(k)
+print("------------------------------")
 
 url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY") or os.environ.get("SUPABASE_ANON_KEY")
+key = os.environ.get("SUPABASE_KEY")
 
 if not url or not key:
-    raise ValueError("Supabase credentials are still missing in GitHub Actions! Check Step 2 below.")
+    raise ValueError(f"URL found: {bool(url)} | Key found: {bool(key)}. Secrets are not reaching GitHub Actions!")
 
 supabase: Client = create_client(url, key)
 
