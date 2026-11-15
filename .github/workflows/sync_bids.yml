@@ -1,0 +1,29 @@
+name: BHEL GeM Auto-Sync
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Runs automatically every 6 hours
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  sync-tenders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install supabase requests
+
+      - name: Run BHEL Ingestion Script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          python sync_bids.py
