@@ -1,10 +1,11 @@
-from supabase import create_client, Client
+from supabase import create_client
 
-# Paste your actual Supabase credentials directly here
+# Paste your actual Supabase URL and Key right here inside the quotes
 SUPABASE_URL = "https://rppgxoqqvyzmiewzkpxa.supabase.co"
 SUPABASE_KEY = "sb_publishable_WjccgngW8-r7gilAJR3YCg_R5STrIZT"
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+print("Connecting directly to Supabase...")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_and_store_bids():
     fresh_bids = [
@@ -17,7 +18,6 @@ def fetch_and_store_bids():
     ]
 
     for tender in fresh_bids:
-        # Check if the bid already exists to avoid duplicates
         existing = supabase.table("bhel_bids").select("id").eq("bid_number", tender["bid_number"]).execute()
         
         if not existing.data:
