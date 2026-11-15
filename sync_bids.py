@@ -1,8 +1,8 @@
 import requests
 
-# Put your actual Supabase URL and Anon/Publishable key right here
-SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co"
-SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"
+# Put your actual Supabase URL and Anon Key right here
+SUPABASE_URL = "https://rppgxoqqvyzmiewzkpxa.supabase.co"
+SUPABASE_KEY = "sb_publishable_WjccgngW8-r7gilAJR3YCg_R5STrIZT"
 
 url = f"{SUPABASE_URL}/rest/v1/bhel_bids"
 
