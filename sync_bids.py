@@ -1,19 +1,10 @@
-import os
 from supabase import create_client, Client
 
-# Diagnostic: Print all environment variable names (safe, no values exposed)
-print("--- ALL AVAILABLE ENV KEYS ---")
-for k in os.environ.keys():
-    print(k)
-print("------------------------------")
+# Paste your actual Supabase credentials directly here
+SUPABASE_URL = "https://rppgxoqqvyzmiewzkpxa.supabase.co"
+SUPABASE_KEY = "sb_publishable_WjccgngW8-r7gilAJR3YCg_R5STrIZT"
 
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
-
-if not url or not key:
-    raise ValueError(f"URL found: {bool(url)} | Key found: {bool(key)}. Secrets are not reaching GitHub Actions!")
-
-supabase: Client = create_client(url, key)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_and_store_bids():
     fresh_bids = [
@@ -26,6 +17,7 @@ def fetch_and_store_bids():
     ]
 
     for tender in fresh_bids:
+        # Check if the bid already exists to avoid duplicates
         existing = supabase.table("bhel_bids").select("id").eq("bid_number", tender["bid_number"]).execute()
         
         if not existing.data:
