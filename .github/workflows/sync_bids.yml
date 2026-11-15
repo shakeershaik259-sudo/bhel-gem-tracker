@@ -22,8 +22,5 @@ jobs:
           pip install supabase requests
 
       - name: Run BHEL Ingestion Script
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           python sync_bids.py
