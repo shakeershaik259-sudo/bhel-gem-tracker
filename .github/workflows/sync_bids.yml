@@ -2,8 +2,8 @@ name: BHEL GeM Auto-Sync
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Runs automatically every 6 hours
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync-tenders:
@@ -25,5 +25,6 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           python sync_bids.py
