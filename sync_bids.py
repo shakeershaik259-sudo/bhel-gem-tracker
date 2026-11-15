@@ -1,16 +1,16 @@
 import os
 from supabase import create_client, Client
 
+# Automatically checks for SUPABASE_KEY or SUPABASE_ANON_KEY
 url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+key = os.environ.get("SUPABASE_KEY") or os.environ.get("SUPABASE_ANON_KEY")
 
 if not url or not key:
-    raise ValueError("Supabase credentials missing from environment variables!")
+    raise ValueError(f"Supabase credentials missing! Check your GitHub repository secrets.")
 
 supabase: Client = create_client(url, key)
 
 def fetch_and_store_bids():
-    # Fresh BHEL tenders parsed from GeM feed
     fresh_bids = [
         {
             "bid_number": "GEM/2026/B/8274636",
@@ -21,7 +21,6 @@ def fetch_and_store_bids():
     ]
 
     for tender in fresh_bids:
-        # Check if the bid already exists to avoid duplicates
         existing = supabase.table("bhel_bids").select("id").eq("bid_number", tender["bid_number"]).execute()
         
         if not existing.data:
