@@ -1,30 +1,32 @@
-from supabase import create_client
+import requests
 
-# Paste your actual Supabase URL and Key right here inside the quotes
-SUPABASE_URL = "https://rppgxoqqvyzmiewzkpxa.supabase.co"
-SUPABASE_KEY = "sb_publishable_WjccgngW8-r7gilAJR3YCg_R5STrIZT"
+# Put your actual Supabase URL and Anon/Publishable key right here
+SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co"
+SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"
 
-print("Connecting directly to Supabase...")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+url = f"{SUPABASE_URL}/rest/v1/bhel_bids"
 
-def fetch_and_store_bids():
-    fresh_bids = [
-        {
-            "bid_number": "GEM/2026/B/8274636",
-            "title": "W97311422302 DRG: 21142211054 REV - BHEL Haridwar",
-            "bhel_unit": "BHEL Haridwar",
-            "end_date": "2026-05-15T18:00:00Z"
-        }
-    ]
+headers = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "resolution=ignore-duplicates"
+}
 
-    for tender in fresh_bids:
-        existing = supabase.table("bhel_bids").select("id").eq("bid_number", tender["bid_number"]).execute()
-        
-        if not existing.data:
-            supabase.table("bhel_bids").insert(tender).execute()
-            print(f"Added new tender: {tender['bid_number']}")
-        else:
-            print(f"Tender already exists: {tender['bid_number']}")
+tender = {
+    "bid_number": "GEM/2026/B/8274636",
+    "title": "W97311422302 DRG: 21142211054 REV - BHEL Haridwar",
+    "bhel_unit": "BHEL Haridwar",
+    "end_date": "2026-05-15T18:00:00Z"
+}
 
-if __name__ == "__main__":
-    fetch_and_store_bids()
+print("Sending tender to Supabase via REST API...")
+response = requests.post(url, headers=headers, json=tender)
+
+print(f"Status Code: {response.status_code}")
+print(f"Response: {response.text}")
+
+if response.status_code in [200, 201]:
+    print("Success! Tender added.")
+else:
+    raise Exception(f"Failed to insert tender: {response.text}")
