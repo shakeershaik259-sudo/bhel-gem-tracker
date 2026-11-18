@@ -15,55 +15,57 @@ headers = {
     "Prefer": "resolution=ignore-duplicates"
 }
 
-def sync_all_bhel_tenders():
-    # Comprehensive live feed of active BHEL tenders across all plant divisions
-    all_bhel_tenders = [
-        {
-            "bid_number": "GEM/2026/B/8286789",
-            "title": "Control and Trip valves - BHEL Trichy",
-            "bhel_unit": "BHEL Trichy",
-            "end_date": "2026-12-05T18:00:00Z"
-        },
-        {
-            "bid_number": "GEM/2026/B/8285706",
-            "title": "Supply of CS Pipes - Heavy Plates and Vessels Plant",
-            "bhel_unit": "BHEL HPVP",
-            "end_date": "2026-12-08T18:00:00Z"
-        },
-        {
-            "bid_number": "GEM/2026/B/8283875",
-            "title": "Partial Discharge Instrument - BHEL Haridwar",
-            "bhel_unit": "BHEL Haridwar",
-            "end_date": "2026-11-28T18:00:00Z"
-        },
-        {
-            "bid_number": "GEM/2026/B/8281742",
-            "title": "SUMP PUMP & MOTOR ASSEMBLY - BHEL Trichy",
-            "bhel_unit": "BHEL Trichy",
-            "end_date": "2026-11-28T07:30:00Z"
-        },
-        {
-            "bid_number": "GEM/2026/B/9998887",
-            "title": "Live Test Procurement for BHEL Steam Turbine Spares",
-            "bhel_unit": "BHEL Hyderabad",
-            "end_date": "2026-11-16T18:00:00Z"
-        },
-        {
-            "bid_number": "GEM/2026/B/8274636",
-            "title": "W97311422302 DRG: 21142211054 REV - BHEL Haridwar",
-            "bhel_unit": "BHEL Haridwar",
-            "end_date": "2026-05-15T18:00:00Z"
+def fetch_all_gem_bhel_tenders():
+    # GeM public search API endpoint for BHEL
+    gem_url = "https://gem.gov.in/search/results"
+    
+    # We loop through pages to grab all available live BHEL listings
+    page = 1
+    total_synced = 0
+
+    while page <= 3: # Scans up to the first 3 pages of active results
+        params = {"q": "BHEL", "page": page}
+        req_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "X-Requested-With": "XMLHttpRequest"
         }
-    ]
 
-    print(f"Syncing {len(all_bhel_tenders)} active BHEL tenders to database...")
+        try:
+            print(f"Fetching GeM BHEL tenders - Page {page}...")
+            response = requests.get(gem_url, params=params, headers=req_headers, timeout=15)
+            
+            if response.status_code != 200:
+                print(f"GeM portal responded with status code: {response.status_code}")
+                break
 
-    for tender in all_bhel_tenders:
-        response = requests.post(supabase_api_url, headers=headers, json=tender)
-        if response.status_code in [200, 201]:
-            print(f"Successfully synced: {tender['bid_number']}")
-        else:
-            print(f"Already exists or skipped: {tender['bid_number']}")
+            data = response.json()
+            tenders = data.get("hits", [])
+
+            if not tenders:
+                print("No more tenders found on GeM search.")
+                break
+
+            for item in tenders:
+                tender_data = {
+                    "bid_number": item.get("gem_bid_number"),
+                    "title": item.get("title", "BHEL Tender"),
+                    "bhel_unit": item.get("buyer_org", "BHEL Unit"),
+                    "end_date": item.get("end_date", "2026-12-31T18:00:00Z")
+                }
+
+                if tender_data["bid_number"]:
+                    res = requests.post(supabase_api_url, headers=headers, json=tender_data)
+                    if res.status_code in [200, 201]:
+                        print(f"Synced live GeM bid: {tender_data['bid_number']}")
+                        total_synced += 1
+
+            page += 1
+        except Exception as e:
+            print(f"Error fetching from GeM: {e}")
+            break
+
+    print(f"Finished! Successfully synced {total_synced} live BHEL tenders from GeM.")
 
 if __name__ == "__main__":
-    sync_all_bhel_tenders()
+    fetch_all_gem_bhel_tenders()
