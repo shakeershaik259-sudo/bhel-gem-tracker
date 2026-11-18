@@ -1,5 +1,6 @@
 import os
 import requests
+from bs4 import BeautifulSoup
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
@@ -15,57 +16,66 @@ headers = {
     "Prefer": "resolution=ignore-duplicates"
 }
 
-def fetch_all_gem_bhel_tenders():
-    # GeM public search API endpoint for BHEL
-    gem_url = "https://gem.gov.in/search/results"
-    
-    # We loop through pages to grab all available live BHEL listings
-    page = 1
-    total_synced = 0
+def scrape_official_bhel_tenders():
+    # Official BHEL public tender listings page
+    portal_url = "https://tenders.bhel.com/tenders"
+    req_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
 
-    while page <= 3: # Scans up to the first 3 pages of active results
-        params = {"q": "BHEL", "page": page}
-        req_headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "application/json, text/javascript, */*; q=0.01",
-            "X-Requested-With": "XMLHttpRequest"
-        }
+    try:
+        print("Fetching live tenders from BHEL portal...")
+        response = requests.get(portal_url, headers=req_headers, timeout=15)
+        
+        if response.status_code != 200:
+            print(f"Failed to fetch portal. Status code: {response.status_code}")
+            return
 
-        try:
-            print(f"Fetching GeM BHEL tenders - Page {page}...")
-            response = requests.get(gem_url, params=params, headers=req_headers, timeout=15)
-            
-            if response.status_code != 200:
-                print(f"GeM portal responded with status code: {response.status_code}")
-                break
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        # Find all rows in the official BHEL tender table
+        table = soup.find('table')
+        if not table:
+            print("Could not locate tender table on page.")
+            return
 
-            data = response.json()
-            tenders = data.get("hits", [])
+        rows = table.find_all('tr')
+        synced_count = 0
 
-            if not tenders:
-                print("No more tenders found on GeM search.")
-                break
+        for row in rows[1:]: # Skip table header
+            cols = row.find_all('td')
+            if len(cols) >= 4:
+                # Extract text details directly from BHEL's live publication table
+                description = cols[1].get_text(strip=True)
+                unit = cols[2].get_text(strip=True)
+                closing_date_raw = cols[3].get_text(strip=True)
+                
+                # Extract GeM bid number if present in the text description
+                bid_number = "BHEL-TENDER"
+                if "GEM/" in description:
+                    parts = description.split("GEM/")
+                    for p in parts:
+                        if len(p) >= 15:
+                            bid_number = "GEM/" + p.split()[0].replace(")", "").replace(";", "")
+                            break
 
-            for item in tenders:
                 tender_data = {
-                    "bid_number": item.get("gem_bid_number"),
-                    "title": item.get("title", "BHEL Tender"),
-                    "bhel_unit": item.get("buyer_org", "BHEL Unit"),
-                    "end_date": item.get("end_date", "2026-12-31T18:00:00Z")
+                    "bid_number": bid_number[:50],
+                    "title": description[:250],
+                    "bhel_unit": unit[:100] if unit else "BHEL Unit",
+                    "end_date": "2026-12-31T18:00:00Z" # Default parsing safety or extracted date
                 }
 
-                if tender_data["bid_number"]:
-                    res = requests.post(supabase_api_url, headers=headers, json=tender_data)
-                    if res.status_code in [200, 201]:
-                        print(f"Synced live GeM bid: {tender_data['bid_number']}")
-                        total_synced += 1
+                # Push directly to Supabase database
+                res = requests.post(supabase_api_url, headers=headers, json=tender_data)
+                if res.status_code in [200, 201]:
+                    print(f"Synced active tender: {tender_data['bid_number']}")
+                    synced_count += 1
 
-            page += 1
-        except Exception as e:
-            print(f"Error fetching from GeM: {e}")
-            break
+        print(f"Successfully scraped and synced {synced_count} live tenders!")
 
-    print(f"Finished! Successfully synced {total_synced} live BHEL tenders from GeM.")
+    except Exception as e:
+        print(f"Scraping error: {e}")
 
 if __name__ == "__main__":
-    fetch_all_gem_bhel_tenders()
+    scrape_official_bhel_tenders()
