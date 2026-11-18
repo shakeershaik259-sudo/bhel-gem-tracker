@@ -2,8 +2,8 @@ name: BHEL GeM Auto-Sync
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    - cron: '0 */6 * * *' # Runs every 6 hours automatically
+  workflow_dispatch:      # Allows you to test it manually anytime
 
 jobs:
   sync-tenders:
@@ -22,5 +22,8 @@ jobs:
           pip install requests
 
       - name: Run BHEL Ingestion Script
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           python sync_bids.py
