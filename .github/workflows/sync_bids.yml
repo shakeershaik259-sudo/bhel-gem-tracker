@@ -1,9 +1,10 @@
+
 name: BHEL GeM Auto-Sync
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Runs every 6 hours automatically
-  workflow_dispatch:      # Allows you to test it manually anytime
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync-tenders:
@@ -19,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install requests beautifulsoup4
 
       - name: Run BHEL Ingestion Script
         env:
