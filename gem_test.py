@@ -1,19 +1,18 @@
 
 import urllib.request
 
-sites = [
-    "https://bidplus.gem.gov.in/all-bids",
-    "https://www.google.com"
-]
+url = "https://bidplus.gem.gov.in/advance-search"
 
-for url in sites:
-    print("\nTesting:", url)
-    try:
-        req = urllib.request.Request(
-            url,
-            headers={"User-Agent": "Mozilla/5.0"}
-        )
-        with urllib.request.urlopen(req, timeout=15) as response:
-            print("Connected:", response.status)
-    except Exception as e:
-        print("Connection failed:", e)
+try:
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
+    with urllib.request.urlopen(req, timeout=20) as response:
+        print("Status:", response.status)
+        print("Page URL:", response.url)
+        html = response.read().decode("utf-8", errors="replace")
+        print("Page length:", len(html))
+        print("HTML received successfully.")
+except Exception as e:
+    print("Test failed:", e)
